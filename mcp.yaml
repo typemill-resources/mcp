@@ -1,0 +1,66 @@
+name: MCP Server
+version: 1.0.0
+description: 'MCP (Model Context Protocol) endpoint that lets AI clients (Claude, ChatGPT, IDEs, custom agents) read and edit Typemill content as tools over HTTP Basic Auth.'
+author: Trendschau
+homepage: https://typemill.net
+repo: https://github.com/typemill-resources/mcp
+license: MAKER
+
+settings:
+  active: false
+  read_tools: true
+  write_tools: false
+  allow_origin: ''
+
+  # Public, no-auth variant. Off by default. NEVER touches per-page meta,
+  # drafts, or write operations — only the tools in public_tools
+  # (must each carry ACL [public, read]).
+  public_endpoint: false
+  public_tools:
+    - get_site_info
+    - list_pages
+    - find_page
+    - get_page
+    - get_page_metadata
+    - search_pages
+  public_origin: ''
+  public_max_payload_kb: 64
+
+forms:
+  fields:
+
+    active:
+      type: checkbox
+      label: Enable authenticated MCP endpoint
+      checkboxlabel: 'Expose POST /api/v1/mcp to authenticated API users.'
+      description: 'When the endpoint is off, any request to /api/v1/mcp returns 405 (the API group has no POST route). Per-user API access still requires the `apiaccess` flag on the user.'
+
+    read_tools:
+      type: checkbox
+      label: Read tools
+      checkboxlabel: 'List pages, find pages, get pages, get page metadata, get site info, search pages.'
+      description: 'Read tools are safe. Search pages requires the BETTERSEARCH plugin to be active.'
+
+    write_tools:
+      type: checkbox
+      label: Write tools
+      checkboxlabel: 'Create, update, publish, unpublish, delete pages; update metadata.'
+      description: 'Write tools are off by default. They depend on the editor user role permissions defined in ACL.'
+
+    public_endpoint:
+      type: checkbox
+      label: Public MCP endpoint (no authentication)
+      checkboxlabel: 'Expose POST /api/v1/mcp-public to anyone, no login required.'
+      description: 'OFF BY DEFAULT. When enabled, the public endpoint exposes ONLY the tools listed in `public_tools`. It NEVER accepts draft mode, never writes, and never returns per-page meta with owners/restrictions beyond what the public web frontend shows. Anyone who knows the URL can enumerate your whole published tree; rate limit at your reverse proxy.'
+
+    public_origin:
+      type: text
+      label: 'Public endpoint: Allowed Origin'
+      placeholder: 'https://app.example.com'
+      description: 'Optional. If left empty the Origin header is not enforced on the public endpoint (browser clients always send one). If set, only requests with this exact Origin are allowed. Otherwise the Origin host must match the site host.'
+
+    allow_origin:
+      type: text
+      label: 'Authenticated endpoint: Allowed Origin (DNS-rebinding protection)'
+      placeholder: 'https://app.example.com'
+      description: 'Optional. If left empty the Origin header is not enforced. If set, only requests with this exact Origin are allowed. Otherwise the Origin host must match the site host.'
